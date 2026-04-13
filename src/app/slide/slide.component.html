@@ -1,0 +1,16 @@
+@let _ = config();
+
+@if (_) {
+  <div class="banner" [style.background-image]="'url(' + _.background + ')'">
+    <img [src]="_.foreground" alt="Promo image"/>
+
+    <div class="content">
+      <span class="title">{{_.title}}</span>
+      <span class="description" [innerHTML]="_.description | safeHtml"></span>
+
+      <button class="outline-button">
+        {{_.buttonText}}
+      </button>
+    </div>
+  </div>
+}

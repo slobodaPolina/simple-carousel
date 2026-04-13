@@ -1,1 +1,11 @@
-/* You can add global styles to this file, and also import other style files */
+$max-screen-width: 600px;
+$theme-background-color: #0f1e32;
+$theme-text-primary-color: white;
+$theme-text-accent-color: #ffe868;
+
+body {
+  margin: 0;
+  height: 100vh;
+  font-family: Rubik, Verdana, sans-serif;
+  color: $theme-text-primary-color;
+}

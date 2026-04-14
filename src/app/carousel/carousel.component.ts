@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal, WritableSignal } from '@angular/core';
 import { SlideComponent } from '../slide/slide.component';
 import { SliderData } from '../interfaces/slider';
+
+type Coordinate = { clientX: number };
 
 @Component({
   selector: 'app-carousel',
@@ -10,6 +12,8 @@ import { SliderData } from '../interfaces/slider';
   imports: [SlideComponent],
 })
 export class CarouselComponent {
+  private minimalDragLength = 50;
+
   // todo get from the service; 'load' from a json
   slides = [
     {
@@ -34,4 +38,34 @@ export class CarouselComponent {
       foreground: 'wheel-mob.png',
     },
   ] as unknown as SliderData[]; // todo get rid of unknown
+
+  index: WritableSignal<number> = signal(0);
+  transformStyle = computed(() => `translateX(-${this.index() * 100}%)`);
+
+  private dragStartX: WritableSignal<number | undefined> = signal(undefined);
+
+  onSwipeStart = ({ clientX }: Coordinate) => {
+    this.dragStartX.set(clientX);
+  };
+
+  onSwipeEnd = ({ clientX }: Coordinate) => {
+    const start = this.dragStartX();
+
+    if (start !== undefined) {
+      const diff = start - clientX;
+
+      if (diff > this.minimalDragLength) {
+        this.updateIndex(1);
+      } else if (diff < -this.minimalDragLength) {
+        this.updateIndex(-1);
+      }
+    }
+  };
+
+  onTouchStart = (event: TouchEvent) => this.onSwipeStart(event.touches[0]);
+  onTouchEnd = (event: TouchEvent) => this.onSwipeEnd(event.changedTouches[0]);
+
+  private updateIndex = (inc: number) => {
+    this.index.update((value) => (value + inc + this.slides.length) % this.slides.length);
+  };
 }

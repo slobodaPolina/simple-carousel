@@ -1,2 +1,12 @@
-<!-- todo combine it altogether to slide them -->
-<app-slide [config]="slides[2]"></app-slide>
+<div class="carousel"
+     [style.transform]="transformStyle()"
+     (dragstart)="onSwipeStart($event)"
+     (pointerdown)="onSwipeStart($event)"
+     (touchstart)="onTouchStart($event)"
+     (dragend)="onSwipeEnd($event)"
+     (pointerup)="onSwipeEnd($event)"
+     (touchend)="onTouchEnd($event)">
+  @for (slide of slides; track slide.title) {
+    <app-slide [config]="slide"></app-slide>
+  }
+</div>

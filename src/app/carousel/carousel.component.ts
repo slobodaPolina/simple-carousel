@@ -21,12 +21,17 @@ type Coordinate = { clientX: number };
 })
 export class CarouselComponent {
   private minimalSwipeLength = 50;
+  private timeToAutoSwipe = 10_000;
   private slidesHttpService = inject(SlidesHttpService)
   private swipeStartX: WritableSignal<number | undefined> = signal(undefined);
 
   index: WritableSignal<number> = signal(0);
   slides = toSignal(this.slidesHttpService.getSlides(), { initialValue: [] });
   transformStyle = computed(() => `translateX(-${this.index() * 100}%)`);
+
+  constructor() {
+    setInterval(() => this.updateIndex(1), this.timeToAutoSwipe);
+  }
 
   onSwipeStart = ({ clientX }: Coordinate) => {
     this.swipeStartX.set(clientX);

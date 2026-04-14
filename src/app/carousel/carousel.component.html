@@ -6,7 +6,7 @@
      (dragend)="onSwipeEnd($event)"
      (pointerup)="onSwipeEnd($event)"
      (touchend)="onTouchEnd($event)">
-  @for (slide of slides; track slide.title) {
+  @for (slide of slides(); track slide.title) {
     <app-slide [config]="slide"></app-slide>
   }
 </div>

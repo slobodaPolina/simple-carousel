@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   signal,
   WritableSignal,
@@ -25,15 +26,22 @@ export class CarouselComponent {
   private slidesHttpService = inject(SlidesHttpService);
   private swipeStartX: WritableSignal<number | undefined> = signal(undefined);
 
+  private intervalRef = 0;
+
   slides = toSignal(this.slidesHttpService.getSlides(), { initialValue: [] });
 
   // relative slide position, pointing at current slide index with possible fractional part indicating current swipe
   slidePosition: WritableSignal<number> = signal(0);
   transformStyle = computed(() => `translateX(-${this.slidePosition() * 100}%)`);
 
-  constructor() {
-    setInterval(() => this.updateSlidePosition(1), this.timeToAutoSwipe);
-  }
+  // prevent unwanted swipe while user is reading
+  private restartAutoSwipeOnUserInteraction = effect((onCleanup) => {
+    this.swipeStartX();
+    this.clearAutoSwipe();
+    this.startAutoSwipe();
+
+    onCleanup(() => this.clearAutoSwipe());
+  });
 
   onSwipeStart = ({ clientX }: Coordinate) => this.swipeStartX.set(clientX);
 
@@ -64,4 +72,10 @@ export class CarouselComponent {
 
   // normalize the value, so it stays in [0, slides.length) to cycle the carousel
   private normalize = (x: number) => (x + this.slides().length) % this.slides().length;
+
+  private startAutoSwipe = () => {
+    this.intervalRef = setInterval(() => this.updateSlidePosition(1), this.timeToAutoSwipe);
+  }
+
+  private clearAutoSwipe = () => clearInterval(this.intervalRef);
 }

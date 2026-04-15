@@ -5,8 +5,10 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "github-build": "ng build --configuration production --base-href 'https://slobodapolina.github.io/simple-carousel/'",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "github-deploy": "npx angular-cli-ghpages --dir=dist/carousel/browser --no-silent"
   },
   "private": true,
   "packageManager": "npm@10.9.3",

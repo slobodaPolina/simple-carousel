@@ -36,6 +36,17 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Build and Deploy Github pages
+
+run:
+
+```bash
+ npm run github-build
+ npm run github-deploy
+```
+
+If everything is correct, you will see the app is successfully published. Check https://slobodapolina.github.io/simple-carousel/ in 10 minutes to see the app.
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:

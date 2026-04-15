@@ -3,9 +3,12 @@
      (dragstart)="onSwipeStart($event)"
      (pointerdown)="onSwipeStart($event)"
      (touchstart)="onTouchStart($event)"
-     (dragend)="onSwipeEnd($event)"
-     (pointerup)="onSwipeEnd($event)"
-     (touchend)="onTouchEnd($event)">
+     (drag)="onSwipeMove($event)"
+     (pointermove)="onSwipeMove($event)"
+     (touchmove)="onTouchMove($event)"
+     (dragend)="onSwipeEnd()"
+     (pointerup)="onSwipeEnd()"
+     (touchend)="onSwipeEnd()">
   @for (slide of slides(); track slide.title) {
     <app-slide [config]="slide"></app-slide>
   }

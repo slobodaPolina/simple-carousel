@@ -20,41 +20,48 @@ type Coordinate = { clientX: number };
   imports: [SlideComponent],
 })
 export class CarouselComponent {
-  private minimalSwipeLength = 50;
+  private swipeCoefficient = 300;
   private timeToAutoSwipe = 10_000;
-  private slidesHttpService = inject(SlidesHttpService)
+  private slidesHttpService = inject(SlidesHttpService);
   private swipeStartX: WritableSignal<number | undefined> = signal(undefined);
 
-  index: WritableSignal<number> = signal(0);
   slides = toSignal(this.slidesHttpService.getSlides(), { initialValue: [] });
-  transformStyle = computed(() => `translateX(-${this.index() * 100}%)`);
+
+  // relative slide position, pointing at current slide index with possible fractional part indicating current swipe
+  slidePosition: WritableSignal<number> = signal(0);
+  transformStyle = computed(() => `translateX(-${this.slidePosition() * 100}%)`);
 
   constructor() {
-    setInterval(() => this.updateIndex(1), this.timeToAutoSwipe);
+    setInterval(() => this.updateSlidePosition(1), this.timeToAutoSwipe);
   }
 
-  onSwipeStart = ({ clientX }: Coordinate) => {
-    this.swipeStartX.set(clientX);
-  };
+  onSwipeStart = ({ clientX }: Coordinate) => this.swipeStartX.set(clientX);
 
-  onSwipeEnd = ({ clientX }: Coordinate) => {
+  onSwipeMove = (coordinate: Coordinate) => {
     const start = this.swipeStartX();
 
-    if (start !== undefined) {
-      const diff = start - clientX;
-
-      if (diff > this.minimalSwipeLength) {
-        this.updateIndex(1);
-      } else if (diff < -this.minimalSwipeLength) {
-        this.updateIndex(-1);
-      }
+    // prevent 'drag' event from firing unexpected 0 at the end of dragging
+    if (start !== undefined && coordinate.clientX) {
+      const relativeSwipeLength = (start - coordinate.clientX) / this.swipeCoefficient;
+      this.updateSlidePosition(Math.min(1, Math.max(relativeSwipeLength, -1))); // swipe a bit, but not more than 1 slide
+      this.onSwipeStart(coordinate);
     }
   };
 
   onTouchStart = (event: TouchEvent) => this.onSwipeStart(event.touches[0]);
-  onTouchEnd = (event: TouchEvent) => this.onSwipeEnd(event.changedTouches[0]);
+  onTouchMove = (event: TouchEvent) => this.onSwipeMove(event.changedTouches[0]);
 
-  private updateIndex = (inc: number) => {
-    this.index.update((value) => (value + inc + this.slides().length) % this.slides().length);
-  };
+  onSwipeEnd = () => {
+    this.roundSlidePosition();
+    this.swipeStartX.set(undefined);
+  }
+
+  private updateSlidePosition = (inc: number) =>
+    this.slidePosition.update((value) => this.normalize(value + inc));
+
+  private roundSlidePosition = () =>
+    this.slidePosition.update((value) => this.normalize(Math.round(value)));
+
+  // normalize the value, so it stays in [0, slides.length) to cycle the carousel
+  private normalize = (x: number) => (x + this.slides().length) % this.slides().length;
 }
